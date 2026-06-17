@@ -1,0 +1,9 @@
+yfinance
+pandas
+numpy
+scipy
+ta
+rich
+openpyxl
+jinja2
+ollama
