@@ -18,6 +18,8 @@ from agents.ranking_agent import RankingAgent
 from agents.dashboard_agent import DashboardAgent
 from agents.ai_technical_agent import AITechnicalAgent
 
+from strategies.ema200_reclaim_strategy import EMA200ReclaimStrategy
+
 from utils.relative_strength import calculate_relative_strength
 from utils.volume import volume_score
 from utils.trend_strength import trend_score
@@ -49,6 +51,8 @@ def main():
     ranking_agent = RankingAgent()
     dashboard_agent = DashboardAgent()
     ai_agent = AITechnicalAgent()
+
+    ema200_strategy = EMA200ReclaimStrategy()
 
     results = []
     errors = []
@@ -84,6 +88,7 @@ def main():
             # --------------------------------
 
             df = indicator_agent.enrich(df)
+
             if df.empty:
                 print(f"Insufficient data for {symbol}")
                 continue
@@ -111,6 +116,8 @@ def main():
             volume_ratio = volume_score(df)
             trend = trend_score(df)
             breakout_confirmed = (confirmed_breakout(close_price, resistance, volume_ratio, rs))
+
+            # ema200_result = ema200_strategy.evaluate(df, volume_ratio)
 
             final_score = ranking_agent.rank(
                 technical_score=score, 
@@ -153,6 +160,8 @@ def main():
                 "SMA20": round(float(latest["SMA20"]), 2),
                 "SMA50": round(float(latest["SMA50"]), 2),
                 "SMA200": round(float(latest["SMA200"]), 2),
+                "EMA10": round(df["EMA10"].iloc[-1], 2),
+                "EMA200": round(df["EMA200"].iloc[-1], 2),
                 "Patterns": pattern_names,
                 "TechnicalScore": score,
                 "Decision": decision,
@@ -165,7 +174,7 @@ def main():
                 "Resistance": resistance if resistance else 0,
                 "ATRPercent": atr_pct,
                 "Risk": risk,
-                "BreakoutConfirmed": breakout_confirmed,
+                "BreakoutConfirmed": breakout_confirmed
             })
 
             print(f"FinalScore={final_score}    Decision={decision}")
@@ -222,7 +231,13 @@ def main():
     # ====================================
     # Elite Picks
     # ====================================
-    elite = results_df[(results_df["BreakoutConfirmed"] == True) & (results_df["FinalScore"] >= 85)]    
+    elite = results_df[(results_df["BreakoutConfirmed"] == True) & (results_df["FinalScore"] >= 85)]  
+
+
+    # ====================================
+    # Below 200 EMA -> Pattern + Breakout
+    # ====================================
+    # ema200_candidates = results_df[results_df["EMA200Match"] == True] 
 
     # ====================================
     # Excel Export
@@ -240,6 +255,9 @@ def main():
     ai_candidates.to_excel(f"reports/excel/ai_candidates_{timestamp}.xlsx", index=False)
     
     top20.to_excel(f"reports/excel/top20_{timestamp}.xlsx", index=False)
+
+    # ema200_candidates.to_excel(f"reports/excel/ema200_candidates_{timestamp}.xlsx", index=False)
+
 
     # ====================================
     # AI Analysis

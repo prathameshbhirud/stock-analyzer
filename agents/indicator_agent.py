@@ -15,6 +15,10 @@ class IndicatorAgent:
 
         df["VolumeAvg20"] = (df["Volume"].rolling(20).mean())
 
+        df["EMA10"] = df["Close"].ewm(span=10, adjust=False).mean()
+
+        df["EMA200"] = df["Close"].ewm(span=200, adjust=False).mean()
+
         df = df.dropna()
 
         return df
