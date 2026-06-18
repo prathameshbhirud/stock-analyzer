@@ -54,7 +54,7 @@ def main():
     errors = []
     stock_data = {}
 
-    symbols = pd.read_csv("data/nifty50.csv")
+    symbols = pd.read_csv("data/nifty500.csv")
     benchmark_df = benchmark_agent.fetch_nifty()
 
     print("\n")
@@ -235,14 +235,18 @@ def main():
     results_df.to_excel(excel_file, index=False)
 
     top20 = results_df[results_df["FinalScore"] >= 85].head(20)
-    print(top20["Symbol"].tolist())
+    ai_candidates = results_df[(results_df["BreakoutConfirmed"] == True) & (results_df["FinalScore"] >= 90)]
+    ai_candidates = ai_candidates.head(10)
+    ai_candidates.to_excel(f"reports/excel/ai_candidates_{timestamp}.xlsx", index=False)
+    
     top20.to_excel(f"reports/excel/top20_{timestamp}.xlsx", index=False)
 
     # ====================================
     # AI Analysis
     # ====================================
+    ai_start = perf_counter()
     ai_results = []
-    for symbol in top20["Symbol"]:
+    for symbol in ai_candidates["Symbol"]:
         try:
             print(f"AI Analyzing {symbol}")
 
@@ -275,13 +279,13 @@ def main():
         except Exception as ex:
             print(f"AI Error {symbol}: {ex}")
     
-    ai_df = pd.DataFrame(ai_results)
-    print(f"AI Stocks Analyzed: {len(ai_df)}")
+    ai_end = perf_counter()
+    print(f"\nAI Time: {round(ai_end-ai_start,2)} sec")
 
+    ai_df = pd.DataFrame(ai_results)
+    
     ai_json_file = (f"reports/json/ai_analysis_{timestamp}.json")
     ai_df.to_json(ai_json_file, orient="records", indent=4)
-
-    print(ai_df["Symbol"].tolist())
 
     results_df = results_df.merge(ai_df, on="Symbol",how="left")
 
@@ -319,9 +323,6 @@ def main():
 
     wb.save(excel_file)
 
-    print(f"\nExcel report saved:")
-    print(excel_file)
-
     # ====================================
     # Top Picks
     # ====================================
@@ -333,9 +334,6 @@ def main():
     top_picks.to_json(json_file, orient="records", indent=4)
 
     top20.to_json(f"reports/json/top20_{timestamp}.json", orient="records", indent=4)
-
-    print(f"\nTop picks saved:")
-    print(json_file)
 
     # ====================================
     # Daily Summary
@@ -372,8 +370,6 @@ def main():
     # ====================================
     html_file = (f"reports/html/dashboard_{timestamp}.html")
     dashboard_agent.generate(results_df, elite, html_file)
-    print(f"\nDashboard Saved:")
-    print(html_file)
     webbrowser.open("file://" + os.path.abspath(html_file))
 
 

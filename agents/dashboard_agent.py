@@ -11,7 +11,8 @@ class DashboardAgent:
         summary = {
             "total": len(results_df),
             "strong_buy": len(results_df[results_df["Decision"] == "STRONG BUY"]),
-            "buy": len(results_df[results_df["Decision"] == "BUY"])
+            "buy": len(results_df[results_df["Decision"] == "BUY"]),
+            "ai_analyzed": len(results_df[results_df["AIPatterns"].notna()])
         }
 
         print(results_df.head())
