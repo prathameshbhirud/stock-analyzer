@@ -448,7 +448,7 @@ Final Score >= 85
 
 
 ## Landing Page
-![Landing Page](https://github.com/prathameshbhirud/ClauseAI/blob/main/images/landing_page.JPG)
+![Landing Page](https://github.com/prathameshbhirud/stock-analyzer/blob/main/screenshots/landing_page.JPG)
 
 # Disclaimer
 
